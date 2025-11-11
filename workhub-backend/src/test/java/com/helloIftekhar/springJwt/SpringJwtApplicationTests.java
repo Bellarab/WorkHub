@@ -1,10 +1,10 @@
-package com.nassim.workhub_backend;
+package com.helloIftekhar.springJwt;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WorkhubBackendApplicationTests {
+class SpringJwtApplicationTests {
 
 	@Test
 	void contextLoads() {

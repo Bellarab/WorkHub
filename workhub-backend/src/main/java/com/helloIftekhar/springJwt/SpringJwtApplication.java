@@ -1,13 +1,13 @@
-package com.nassim.workhub_backend;
+package com.helloIftekhar.springJwt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class WorkhubBackendApplication {
+public class SpringJwtApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(WorkhubBackendApplication.class, args);
+		SpringApplication.run(SpringJwtApplication.class, args);
 	}
 
 }
