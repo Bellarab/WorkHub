@@ -25,6 +25,8 @@ public class User implements UserDetails {
 
     @Column(name = "username")
     private String username;
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "password")
     private String password;
@@ -55,13 +57,21 @@ public class User implements UserDetails {
     public String getLastName() {
         return lastName;
     }
+    public String getEmail() {
+        return  email;
+    }
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
@@ -92,7 +102,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
-
     public String getPassword() {
         return password;
     }
@@ -116,4 +125,6 @@ public class User implements UserDetails {
     public void setTokens(List<Token> tokens) {
         this.tokens = tokens;
     }
+
+
 }
