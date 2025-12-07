@@ -1,0 +1,42 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>WorkHub</h1>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      <li *ngFor="let item of menuItems">
+        <button
+          (click)="onNavigate(item.view)"
+          [class.active]="
+            currentView === item.view || (item.view === 'projects' && currentView === 'project')
+          "
+        >
+          {{ item.label }}
+        </button>
+      </li>
+
+      <li *ngIf="currentUser.role === 'admin'">
+        <button (click)="onNavigate('admin')" [class.active]="currentView === 'admin'">
+          Admin Panel
+        </button>
+      </li>
+
+      <li class="settings-item">
+        <button>Settings</button>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <img [src]="currentUser.avatar" [alt]="currentUser.name" />
+      <div class="user-details">
+        <p class="user-name">{{ currentUser.name }}</p>
+        <p class="user-email">{{ currentUser.email }}</p>
+      </div>
+    </div>
+
+    <button class="role-toggle" (click)="onToggleRole()">Role: {{ currentUser.role }}</button>
+  </div>
+</aside>
