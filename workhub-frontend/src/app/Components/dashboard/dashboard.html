@@ -1,0 +1,102 @@
+<div class="dashboard">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Welcome back, {{ currentUser.name.split(' ')[0] }}</h1>
+      <p class="subtitle">Here's what's happening with your projects today</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card stat-primary">
+        <div class="stat-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Total Projects</p>
+          <p class="stat-value">{{ totalProjects }}</p>
+        </div>
+      </div>
+      <div class="stat-card stat-success">
+        <div class="stat-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Completed Projects</p>
+          <p class="stat-value">{{ completedProjects }}</p>
+        </div>
+      </div>
+      <div class="stat-card stat-info">
+        <div class="stat-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+            <path d="M9 12h6m-6 4h6" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">My Tasks</p>
+          <p class="stat-value">{{ myTasks }}</p>
+        </div>
+      </div>
+      <div class="stat-card stat-danger">
+        <div class="stat-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <line x1="12" y1="6" x2="12" y2="13" />
+            <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Overdue Tasks</p>
+          <p class="stat-value">{{ myOverdueTasks }}</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="charts-section">
+    <div class="chart-card">
+      <h3>Project Status Overview</h3>
+      <div class="chart-container">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Weekly Task Completion</h3>
+      <div class="chart-container">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
