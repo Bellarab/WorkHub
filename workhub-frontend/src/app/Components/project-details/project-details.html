@@ -1,0 +1,114 @@
+<div class="container" *ngIf="!isLoading && project">
+  <!-- Header -->
+  <header class="header">
+    <button class="back-button" (click)="goBack()">
+      <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+        />
+      </svg>
+      Back to Projects
+    </button>
+
+    <div class="project-header">
+      <div class="project-info">
+        <div
+          class="project-icon"
+          [style.background-color]="project.color + '33' || 'rgba(99, 102, 241, 0.2)'"
+        >
+          <div
+            class="project-icon-inner"
+            [style.background-color]="project.color || '#6366f1'"
+          ></div>
+        </div>
+        <div class="project-details">
+          <h1>{{ project.title }}</h1>
+          <p>{{ project.description }}</p>
+        </div>
+      </div>
+      <button class="invite-button">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+          />
+        </svg>
+        Invite Member
+      </button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'tasks'" (click)="setActiveTab('tasks')">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+        Tasks
+      </button>
+      <button
+        class="tab"
+        [class.active]="activeTab === 'members'"
+        (click)="setActiveTab('members')"
+      >
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+        Members
+      </button>
+      <button class="tab" [class.active]="activeTab === 'chat'" (click)="setActiveTab('chat')">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          />
+        </svg>
+        Chat
+      </button>
+    </div>
+  </header>
+
+  <!-- Content - Tasks View -->
+  <div class="content" *ngIf="activeTab === 'tasks'">
+    <app-task-board
+      [tasks]="project.tasks || []"
+      (taskStatusChanged)="onTaskStatusChanged($event)"
+    ></app-task-board>
+  </div>
+
+  <!-- Content - Members View -->
+  <div class="content" *ngIf="activeTab === 'members'">
+    <app-member-list [members]="project.members || []"></app-member-list>
+  </div>
+
+  <!-- Content - Chat View -->
+  <div class="content" *ngIf="activeTab === 'chat'">
+    <app-project-chat></app-project-chat>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-state" *ngIf="isLoading">
+  <p>Loading project details...</p>
+</div>
+
+<!-- Error State -->
+<div class="error-state" *ngIf="errorMessage && !isLoading">
+  <p>{{ errorMessage }}</p>
+  <button class="back-button" (click)="goBack()">Back to Projects</button>
+</div>

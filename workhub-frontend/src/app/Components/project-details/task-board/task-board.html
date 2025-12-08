@@ -1,0 +1,155 @@
+<div class="task-header">
+  <div>
+    <h2>Project Tasks</h2>
+    <p>{{ tasks?.length || 0 }} total tasks</p>
+  </div>
+  <button class="add-task-button">
+    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+    Add Task
+  </button>
+</div>
+
+<div class="task-columns">
+  <!-- To Do Column -->
+  <div class="task-column">
+    <div class="column-header">
+      <h3>To Do</h3>
+      <span class="column-count">{{ todoTasks.length }}</span>
+    </div>
+    <div class="task-list">
+      <div *ngFor="let task of todoTasks" class="task-card">
+        <div class="task-title-row">
+          <h4 class="task-title">{{ task.title }}</h4>
+          <svg
+            class="priority-icon"
+            [style.color]="task.priority === 'high' ? '#ef4444' : '#eab308'"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="task-footer">
+          <div class="task-assignee">
+            <span class="assignee-name">Assigned to: {{ task.assignedTo }}</span>
+          </div>
+          <select
+            class="task-status-select"
+            [value]="task.status"
+            (change)="updateTaskStatus(task, $any($event.target).value)"
+          >
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="task-due-date" *ngIf="task.dueDate">Due: {{ task.dueDate }}</div>
+      </div>
+      <div *ngIf="todoTasks.length === 0" class="empty-state">
+        <p>No tasks in this column</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- In Progress Column -->
+  <div class="task-column">
+    <div class="column-header">
+      <h3>In Progress</h3>
+      <span class="column-count">{{ inProgressTasks.length }}</span>
+    </div>
+    <div class="task-list">
+      <div *ngFor="let task of inProgressTasks" class="task-card">
+        <div class="task-title-row">
+          <h4 class="task-title">{{ task.title }}</h4>
+          <svg
+            class="priority-icon"
+            [style.color]="task.priority === 'high' ? '#ef4444' : '#eab308'"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="task-footer">
+          <div class="task-assignee">
+            <span class="assignee-name">Assigned to: {{ task.assignedTo }}</span>
+          </div>
+          <select
+            class="task-status-select"
+            [value]="task.status"
+            (change)="updateTaskStatus(task, $any($event.target).value)"
+          >
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="task-due-date" *ngIf="task.dueDate">Due: {{ task.dueDate }}</div>
+      </div>
+      <div *ngIf="inProgressTasks.length === 0" class="empty-state">
+        <p>No tasks in this column</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Column -->
+  <div class="task-column">
+    <div class="column-header">
+      <h3>Completed</h3>
+      <span class="column-count">{{ completedTasks.length }}</span>
+    </div>
+    <div class="task-list">
+      <div *ngFor="let task of completedTasks" class="task-card">
+        <div class="task-title-row">
+          <h4 class="task-title">{{ task.title }}</h4>
+          <svg
+            class="priority-icon"
+            [style.color]="task.priority === 'high' ? '#ef4444' : '#eab308'"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="task-footer">
+          <div class="task-assignee">
+            <span class="assignee-name">Assigned to: {{ task.assignedTo }}</span>
+          </div>
+          <select
+            class="task-status-select"
+            [value]="task.status"
+            (change)="updateTaskStatus(task, $any($event.target).value)"
+          >
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="task-due-date" *ngIf="task.dueDate">Due: {{ task.dueDate }}</div>
+      </div>
+      <div *ngIf="completedTasks.length === 0" class="empty-state">
+        <p>No tasks in this column</p>
+      </div>
+    </div>
+  </div>
+</div>

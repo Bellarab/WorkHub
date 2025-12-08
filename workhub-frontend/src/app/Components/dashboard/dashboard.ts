@@ -16,9 +16,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   // Static current user (same as sidebar)
   currentUser: User = {
     id: 1,
-    name: 'John Doe',
+    firstName: 'John',
+    lastName: 'Doe',
     email: 'john@example.com',
-    role: 'admin',
+    role: 'ADMIN',
     avatar: 'https://i.pravatar.cc/150?img=1',
   };
 

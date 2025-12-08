@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { User } from '../../Models/user/user-module';
 import { CommonModule } from '@angular/common';
+import { Auth } from '../../services/auth/auth.service';
 
 /**
  * SidebarComponent
@@ -17,23 +19,22 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss'],
 })
 export class SidebarComponent {
+  constructor(private router: Router, private auth: Auth) {}
+
   // Static current user data (no longer passed from parent)
   currentUser: User = {
     id: 1,
-    name: 'John Doe',
+    firstName: 'John',
+    lastName: 'Doe',
     email: 'john@example.com',
-    role: 'admin',
+    role: 'ADMIN',
     avatar: 'https://i.pravatar.cc/150?img=1',
   };
-
-  // Static current view to highlight the corresponding menu item
-  currentView: 'dashboard' | 'projects' | 'project' | 'calendar' | 'collaboration' | 'admin' =
-    'dashboard';
 
   /**
    * Menu items displayed in the sidebar navigation
@@ -52,18 +53,27 @@ export class SidebarComponent {
 
   /**
    * Handles navigation when a menu item is clicked
-   * Updates the current view directly in the component
+   * Uses Angular Router to navigate to the specified route
    * @param view - The view to navigate to
    */
   onNavigate(view: string) {
-    this.currentView = view as any;
+    this.router.navigate([`/${view}`]);
   }
 
   /**
    * Handles role toggle button click
-   * Switches user role between 'admin' and 'user'
+   * Switches user role between 'ADMIN' and 'USER'
    */
   onToggleRole() {
-    this.currentUser.role = this.currentUser.role === 'admin' ? 'user' : 'admin';
+    this.currentUser.role = this.currentUser.role === 'ADMIN' ? 'USER' : 'ADMIN';
+  }
+
+  /**
+   * Handles user logout
+   * Clears authentication token and redirects to login page
+   */
+  onLogout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 }

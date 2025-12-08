@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiConfig } from '../config/api.config';
+import { ApiConfig } from '../../config/api.config';
 
 interface LoginResponse {
   access_token: string;
@@ -39,6 +39,7 @@ export class Auth {
       lastName,
       email,
       password,
+      role: 'USER',
     });
   }
 

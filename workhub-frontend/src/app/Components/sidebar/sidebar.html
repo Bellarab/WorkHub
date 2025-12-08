@@ -6,20 +6,13 @@
   <nav class="sidebar-nav">
     <ul>
       <li *ngFor="let item of menuItems">
-        <button
-          (click)="onNavigate(item.view)"
-          [class.active]="
-            currentView === item.view || (item.view === 'projects' && currentView === 'project')
-          "
-        >
+        <a [routerLink]="['/', item.view]" routerLinkActive="active">
           {{ item.label }}
-        </button>
+        </a>
       </li>
 
-      <li *ngIf="currentUser.role === 'admin'">
-        <button (click)="onNavigate('admin')" [class.active]="currentView === 'admin'">
-          Admin Panel
-        </button>
+      <li *ngIf="currentUser.role === 'ADMIN'">
+        <a routerLink="/admin" routerLinkActive="active"> Admin Panel </a>
       </li>
 
       <li class="settings-item">
@@ -30,13 +23,14 @@
 
   <div class="sidebar-footer">
     <div class="user-info">
-      <img [src]="currentUser.avatar" [alt]="currentUser.name" />
+      <img [src]="currentUser.avatar" [alt]="currentUser.firstName + ' ' + currentUser.lastName" />
       <div class="user-details">
-        <p class="user-name">{{ currentUser.name }}</p>
+        <p class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</p>
         <p class="user-email">{{ currentUser.email }}</p>
       </div>
     </div>
 
     <button class="role-toggle" (click)="onToggleRole()">Role: {{ currentUser.role }}</button>
+    <button class="btn-logout" (click)="onLogout()">Logout</button>
   </div>
 </aside>

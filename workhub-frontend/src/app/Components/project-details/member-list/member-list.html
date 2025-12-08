@@ -1,0 +1,53 @@
+<div class="member-header">
+  <h2>Team Members</h2>
+  <p>{{ members?.length || 0 }} members on this project</p>
+</div>
+
+<div class="member-list">
+  <div *ngFor="let member of members" class="member-item">
+    <div class="member-content">
+      <div class="member-avatar-wrapper">
+        <img
+          *ngIf="member.user.avatar"
+          [src]="member.user.avatar"
+          [alt]="getFullName(member)"
+          class="member-avatar"
+        />
+        <div
+          *ngIf="!member.user.avatar"
+          class="member-avatar member-avatar-placeholder"
+          [style.background-color]="getAvatarColor(member)"
+        >
+          <span class="member-initials">{{ getInitials(member) }}</span>
+        </div>
+      </div>
+      <div class="member-info">
+        <div class="member-name-row">
+          <h3>{{ member.user?.firstName }} {{ member.user?.lastName }}</h3>
+          <span
+            class="badge"
+            [class.badge-admin]="member.role === 'OWNER' || member.role === 'ADMIN'"
+          >
+            {{ member.role }}
+          </span>
+        </div>
+        <div class="member-details">
+          <div class="member-email">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            <span>{{ member.user?.email }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!members || members.length === 0" class="empty-state">
+    <p>No members yet</p>
+  </div>
+</div>

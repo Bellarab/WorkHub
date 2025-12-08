@@ -1,8 +1,7 @@
 <div class="app-container">
-  <app-sidebar></app-sidebar>
+  <app-sidebar *ngIf="showSidebar"></app-sidebar>
 
-  <main class="main-content">
-    <!-- <app-dashboard *ngIf="currentView === 'dashboard'"></app-dashboard> -->
-    <!-- Add more views for projects, calendar, etc. -->
+  <main class="main-content" [class.full-width]="!showSidebar">
+    <router-outlet></router-outlet>
   </main>
 </div>

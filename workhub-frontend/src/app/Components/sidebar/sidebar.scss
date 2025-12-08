@@ -44,7 +44,8 @@
   border-top: 1px solid #e0e0e0;
 }
 
-.sidebar-nav button {
+.sidebar-nav button,
+.sidebar-nav a {
   width: 100%;
   padding: 0.75rem 1rem;
   background: transparent;
@@ -55,14 +56,19 @@
   color: #4b5563;
   font-size: 0.95rem;
   font-weight: 500;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
 }
 
-.sidebar-nav button:hover {
+.sidebar-nav button:hover,
+.sidebar-nav a:hover {
   background-color: #f3f4f6;
   color: #1f2937;
 }
 
-.sidebar-nav button.active {
+.sidebar-nav button.active,
+.sidebar-nav a.active {
   background-color: #eff6ff;
   color: #2563eb;
   font-weight: 600;
@@ -123,8 +129,28 @@
   transition: background-color 0.2s;
   text-align: left;
   font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
 }
 
 .role-toggle:hover {
   background-color: #e5e7eb;
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background-color: #ef4444;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  color: #ffffff;
+  transition: background-color 0.2s;
+  text-align: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background-color: #dc2626;
 }

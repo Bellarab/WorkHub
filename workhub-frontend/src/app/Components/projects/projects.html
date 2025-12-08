@@ -1,0 +1,290 @@
+<div class="projects">
+  <header class="projects-header">
+    <div class="header-top">
+      <div>
+        <h1>Projects</h1>
+        <p class="subtitle">Manage and track all your projects</p>
+      </div>
+
+      <button class="btn-new-project" (click)="openCreateModal()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Project
+      </button>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <svg
+          class="search-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search projects..."
+          [(ngModel)]="searchQuery"
+          class="search-input"
+        />
+      </div>
+
+      <button class="btn-filter">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        Filter
+      </button>
+    </div>
+  </header>
+
+  <div class="projects-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <p>Loading projects...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="loadProjects()">Retry</button>
+    </div>
+
+    <!-- Projects List -->
+    <div *ngIf="!isLoading && !errorMessage">
+      <!-- Active Projects -->
+      <section class="projects-section">
+        <div class="section-header">
+          <h2>Active Projects</h2>
+          <span class="project-count">{{ activeProjects.length }} projects</span>
+        </div>
+
+        <div class="projects-grid">
+          <div
+            *ngFor="let project of activeProjects"
+            class="project-card"
+            (click)="navigateToProject(project.id)"
+          >
+            <div class="project-header">
+              <div
+                class="project-color"
+                [style.background-color]="project.color || '#6366f1'"
+              ></div>
+              <h3>{{ project.title }}</h3>
+            </div>
+            <p class="project-description">{{ project.description }}</p>
+
+            <div class="card-footer">
+              <div class="progress-info">
+                <span class="progress-label">Progress</span>
+                <span class="progress-value">{{ getTaskProgress(project) }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="getTaskProgress(project)"
+                  [style.background-color]="project.color || '#6366f1'"
+                ></div>
+              </div>
+              <div class="task-info">
+                <svg
+                  class="icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                <span>{{ getCompletedTasks(project) }}/{{ getTotalTasks(project) }} tasks</span>
+                <svg
+                  class="icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>{{ project.members?.length || 0 }} members</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeProjects.length === 0" class="empty-state">
+          <p>No active projects found</p>
+        </div>
+      </section>
+
+      <!-- Completed Projects -->
+      <section *ngIf="completedProjects.length > 0" class="projects-section">
+        <div class="section-header">
+          <h2>Completed Projects</h2>
+          <span class="project-count">{{ completedProjects.length }} projects</span>
+        </div>
+
+        <div class="projects-grid">
+          <div
+            *ngFor="let project of completedProjects"
+            class="project-card completed"
+            (click)="navigateToProject(project.id)"
+          >
+            <div class="project-header">
+              <div
+                class="project-color"
+                [style.background-color]="project.color || '#6366f1'"
+              ></div>
+              <h3>{{ project.title }}</h3>
+            </div>
+            <p class="project-description">{{ project.description }}</p>
+
+            <div class="card-footer">
+              <div class="progress-info">
+                <span class="progress-label">Progress</span>
+                <span class="progress-value">100%</span>
+              </div>
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="100"
+                  [style.background-color]="project.color || '#6366f1'"
+                ></div>
+              </div>
+              <div class="task-info">
+                <svg
+                  class="icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                <span>{{ getTotalTasks(project) }}/{{ getTotalTasks(project) }} tasks</span>
+                <svg
+                  class="icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>{{ project.members?.length || 0 }} members</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Create Project Modal -->
+  <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Create New Project</h2>
+        <button class="btn-close" (click)="closeCreateModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form
+        #projectForm="ngForm"
+        (ngSubmit)="
+          createProject(
+            projectTitle.value,
+            projectDescription.value,
+            projectStartDate.value,
+            projectEndDate.value,
+            projectColor.value
+          );
+          projectForm.reset()
+        "
+      >
+        <div class="form-group">
+          <label for="projectTitle">Project Title</label>
+          <input
+            type="text"
+            id="projectTitle"
+            #projectTitle
+            required
+            placeholder="Enter project title"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="projectDescription">Description</label>
+          <textarea
+            id="projectDescription"
+            #projectDescription
+            required
+            rows="3"
+            placeholder="Enter project description"
+            class="form-input"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="projectStartDate">Start Date</label>
+          <input type="date" id="projectStartDate" #projectStartDate required class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label for="projectEndDate">End Date</label>
+          <input type="date" id="projectEndDate" #projectEndDate class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>Project Color</label>
+          <div class="color-options">
+            <label class="color-option">
+              <input type="radio" name="color" value="blue" #projectColor checked />
+              <span class="color-circle" style="background: #3b82f6"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="green" #projectColor />
+              <span class="color-circle" style="background: #10b981"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="orange" #projectColor />
+              <span class="color-circle" style="background: #f59e0b"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="purple" #projectColor />
+              <span class="color-circle" style="background: #8b5cf6"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="red" #projectColor />
+              <span class="color-circle" style="background: #ef4444"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

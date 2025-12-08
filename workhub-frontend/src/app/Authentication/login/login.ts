@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { Auth as AuthService } from '../../services/auth';
-import { Router } from '@angular/router';
+import { Auth as AuthService } from '../../services/auth/auth.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -15,13 +15,22 @@ export class Login {
   showPassword = false;
   errorMessage = '';
   isLoading = false;
+  returnUrl: string = '/dashboard';
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
       rememberMe: [false],
     });
+
+    // Get return url from route parameters or default to '/dashboard'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
 
   togglePassword() {
@@ -37,7 +46,7 @@ export class Login {
         next: (res) => {
           this.isLoading = false;
           this.auth.setToken(res.access_token);
-          this.router.navigate(['/dashboard']); // navigate to protected page
+          this.router.navigate([this.returnUrl]); // navigate to original requested page or dashboard
         },
         error: (err) => {
           this.isLoading = false;
