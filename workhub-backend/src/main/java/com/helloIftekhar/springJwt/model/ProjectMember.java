@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "project_members")
 @Getter @Setter @NoArgsConstructor
@@ -15,6 +18,7 @@ public class ProjectMember {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("projectId") //Take the ID from project.getId() and automatically fill id.projectId
     @JoinColumn(name = "project_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,6 +29,10 @@ public class ProjectMember {
 
     @Enumerated(EnumType.STRING)
     private ProjectRole role;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @OneToMany(mappedBy = "assignedTo")
+    private List<Task> assignedTasks = new ArrayList<>();
 
     public ProjectMember(Project project, User user, ProjectRole role) {
         this.project = project;

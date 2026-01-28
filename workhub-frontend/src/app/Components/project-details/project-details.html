@@ -29,17 +29,38 @@
           <p>{{ project.description }}</p>
         </div>
       </div>
-      <button class="invite-button">
-        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-          />
-        </svg>
-        Invite Member
-      </button>
+      <div class="header-actions">
+        <button
+          *ngIf="currentUserRole === 'OWNER' || currentUserRole === 'MANAGER'"
+          class="invite-button"
+          (click)="openInviteModal()"
+        >
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+            />
+          </svg>
+          Add Member
+        </button>
+        <button
+          *ngIf="currentUserRole === 'OWNER'"
+          class="delete-button"
+          (click)="openDeleteModal()"
+        >
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+          Delete Project
+        </button>
+      </div>
     </div>
 
     <div class="tabs">
@@ -80,25 +101,153 @@
         </svg>
         Chat
       </button>
+      <button
+        *ngIf="currentUserRole === 'OWNER'"
+        class="tab"
+        [class.active]="activeTab === 'settings'"
+        (click)="setActiveTab('settings')"
+      >
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+          />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+        Settings
+      </button>
     </div>
   </header>
 
   <!-- Content - Tasks View -->
   <div class="content" *ngIf="activeTab === 'tasks'">
     <app-task-board
-      [tasks]="project.tasks || []"
+      [tasks]="filteredTasks"
+      [members]="members"
+      [projectId]="project.id"
+      [canCreateTasks]="canCreateTasks()"
+      [canAssignToOthers]="canAssignToOthers()"
+      [currentUserId]="currentUserId"
       (taskStatusChanged)="onTaskStatusChanged($event)"
+      (taskCreated)="onTaskCreated($event)"
+      (taskUpdated)="onTaskUpdated($event)"
+      (taskDeleted)="onTaskDeleted($event)"
     ></app-task-board>
   </div>
 
   <!-- Content - Members View -->
   <div class="content" *ngIf="activeTab === 'members'">
-    <app-member-list [members]="project.members || []"></app-member-list>
+    <app-member-list
+      [members]="members"
+      [isOwner]="currentUserRole === 'OWNER'"
+      [currentUserId]="currentUserId"
+      (roleChanged)="onMemberRoleChanged($event)"
+      (memberRemoved)="onMemberRemoved($event)"
+    ></app-member-list>
   </div>
 
   <!-- Content - Chat View -->
   <div class="content" *ngIf="activeTab === 'chat'">
     <app-project-chat></app-project-chat>
+  </div>
+
+  <!-- Content - Settings View -->
+  <div class="content" *ngIf="activeTab === 'settings'">
+    <div class="settings-container">
+      <div class="settings-header">
+        <h2>Project Settings</h2>
+        <p>Update your project information</p>
+      </div>
+
+      <form class="settings-form" (ngSubmit)="updateProject()">
+        <div class="form-group">
+          <label for="projectTitle">Project Title *</label>
+          <input
+            type="text"
+            id="projectTitle"
+            [(ngModel)]="editedProject.title"
+            name="projectTitle"
+            placeholder="Enter project title"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="projectDescription">Description</label>
+          <textarea
+            id="projectDescription"
+            [(ngModel)]="editedProject.description"
+            name="projectDescription"
+            placeholder="Enter project description"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input
+              type="date"
+              id="startDate"
+              [(ngModel)]="editedProject.startDate"
+              name="startDate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" [(ngModel)]="editedProject.endDate" name="endDate" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="projectStatus">Project Status</label>
+          <select
+            id="projectStatus"
+            [(ngModel)]="editedProject.status"
+            name="projectStatus"
+            class="status-select"
+          >
+            <option value="PLANNED">Planned</option>
+            <option value="ACTIVE">Active</option>
+            <option value="ON_HOLD">On Hold</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="projectColor">Project Color</label>
+          <div class="color-picker-container">
+            <input
+              type="color"
+              id="projectColor"
+              [(ngModel)]="editedProject.color"
+              name="projectColor"
+              class="color-input"
+            />
+            <span class="color-value">{{ editedProject.color }}</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="save-button"
+            [disabled]="isUpdatingProject || !editedProject.title?.trim()"
+          >
+            <span *ngIf="!isUpdatingProject">Save Changes</span>
+            <span *ngIf="isUpdatingProject">Saving...</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -111,4 +260,205 @@
 <div class="error-state" *ngIf="errorMessage && !isLoading">
   <p>{{ errorMessage }}</p>
   <button class="back-button" (click)="goBack()">Back to Projects</button>
+</div>
+
+<!-- Invite Member Modal -->
+<div class="modal-overlay" *ngIf="showInviteModal" (click)="closeInviteModal()">
+  <div class="modal-content invite-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Invite Members</h2>
+      <button class="close-button" (click)="closeInviteModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Search Input -->
+      <div class="search-section">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            placeholder="Search users by name or email..."
+            class="search-input"
+            autocomplete="off"
+          />
+          <div class="loading-spinner" *ngIf="isSearching">
+            <svg class="spinner" viewBox="0 0 24 24">
+              <circle
+                class="spinner-circle"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        <div class="search-results" *ngIf="searchResults.length > 0">
+          <div
+            *ngFor="let user of searchResults"
+            class="user-result-item"
+            (click)="selectUser(user)"
+          >
+            <div class="user-avatar">
+              <img *ngIf="user.avatar" [src]="user.avatar" [alt]="getUserFullName(user)" />
+              <div *ngIf="!user.avatar" class="user-avatar-placeholder">
+                {{ getUserInitials(user) }}
+              </div>
+            </div>
+            <div class="user-info">
+              <div class="user-name">{{ getUserFullName(user) }}</div>
+              <div class="user-email">{{ user.email }}</div>
+            </div>
+            <svg class="add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- No Results -->
+        <div class="no-results" *ngIf="searchQuery && !isSearching && searchResults.length === 0">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            />
+          </svg>
+          <p>No users found</p>
+        </div>
+      </div>
+
+      <!-- Selected Users -->
+      <div class="selected-section" *ngIf="selectedUsers.length > 0">
+        <h3>Selected Members ({{ selectedUsers.length }})</h3>
+        <div class="selected-users">
+          <div *ngFor="let user of selectedUsers" class="selected-user-chip">
+            <div class="user-avatar-small">
+              <img *ngIf="user.avatar" [src]="user.avatar" [alt]="getUserFullName(user)" />
+              <div *ngIf="!user.avatar" class="user-avatar-placeholder">
+                {{ getUserInitials(user) }}
+              </div>
+            </div>
+            <span class="user-name">{{ getUserFullName(user) }}</span>
+            <button class="remove-button" (click)="removeSelectedUser(user)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="cancel-button" (click)="closeInviteModal()">Cancel</button>
+      <button
+        class="invite-button-primary"
+        (click)="inviteMembers()"
+        [disabled]="selectedUsers.length === 0"
+      >
+        Invite {{ selectedUsers.length }} Member{{ selectedUsers.length !== 1 ? 's' : '' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Project Modal -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Delete Project</h2>
+      <button class="close-button" (click)="closeDeleteModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="warning-section">
+        <svg class="warning-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+        <div class="warning-content">
+          <h3>This action cannot be undone</h3>
+          <p>
+            This will permanently delete the project <strong>{{ project?.title }}</strong
+            >, all tasks, and remove all team member associations.
+          </p>
+        </div>
+      </div>
+
+      <div class="confirmation-section">
+        <label for="deleteConfirmation">
+          Please type <strong>{{ project?.title }}</strong> to confirm:
+        </label>
+        <input
+          id="deleteConfirmation"
+          type="text"
+          [(ngModel)]="deleteConfirmationText"
+          placeholder="Enter project name"
+          class="confirmation-input"
+          [class.valid]="canConfirmDelete()"
+        />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="cancel-button" (click)="closeDeleteModal()" [disabled]="isDeletingProject">
+        Cancel
+      </button>
+      <button
+        class="delete-button-primary"
+        (click)="deleteProject()"
+        [disabled]="!canConfirmDelete() || isDeletingProject"
+      >
+        <span *ngIf="!isDeletingProject">Delete Project</span>
+        <span *ngIf="isDeletingProject">Deleting...</span>
+      </button>
+    </div>
+  </div>
 </div>

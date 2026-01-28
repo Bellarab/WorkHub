@@ -2,6 +2,8 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { User } from '../../Models/user/user-module';
 import { CommonModule } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
+import { ProjectsService } from '../../services/projects/projects.service';
+import { Auth } from '../../services/auth/auth.service';
 
 Chart.register(...registerables);
 
@@ -13,33 +15,110 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.scss'],
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-  // Static current user (same as sidebar)
-  currentUser: User = {
-    id: 1,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    role: 'ADMIN',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-  };
+  currentUser: User | null = null;
+  isLoading = true;
 
-  totalProjects = 2;
-  completedProjects = 1;
-  ongoingProjects = 2;
-  onHoldProjects = 1;
-  myTasks = 5;
-  myCompletedTasks = 2;
-  myInProgressTasks = 2;
+  totalProjects = 0;
+  completedProjects = 0;
+  ongoingProjects = 0;
+  onHoldProjects = 0;
+  plannedProjects = 0;
+  myTasks = 0;
+  myCompletedTasks = 0;
+  myInProgressTasks = 0;
   myOverdueTasks = 0;
+  weeklyTaskCompletion: number[] = [];
 
   private pieChart: Chart | null = null;
   private barChart: Chart | null = null;
 
+  constructor(private projectsService: ProjectsService, private auth: Auth) {}
+
   ngOnInit() {
-    // Stats are now hardcoded above
+    this.currentUser = this.auth.getUser();
+    this.loadDashboardData();
+  }
+
+  loadDashboardData() {
+    const userId = this.auth.getCurrentUserId();
+    console.log('Dashboard - Current userId:', userId);
+
+    if (!userId) {
+      console.error('Dashboard - No userId found');
+      this.isLoading = false;
+      return;
+    }
+
+    console.log('Dashboard - Fetching data from API for userId:', userId);
+    this.projectsService.getDashboardData(userId).subscribe({
+      next: (data: any) => {
+        console.log('Dashboard - Raw API response:', data);
+        console.log('Dashboard - API response type:', typeof data);
+        console.log('Dashboard - API response keys:', Object.keys(data));
+
+        console.log('Dashboard - totalProjects:', data.totalProjects);
+        console.log('Dashboard - completedProjects:', data.completedProjects);
+        console.log('Dashboard - ongoingProjects:', data.ongoingProjects);
+        console.log('Dashboard - onHoldProjects:', data.onHoldProjects);
+        console.log('Dashboard - plannedProjects:', data.plannedProjects);
+        console.log('Dashboard - totalTasks:', data.totalTasks);
+        console.log('Dashboard - completedTasks:', data.completedTasks);
+        console.log('Dashboard - inProgressTasks:', data.inProgressTasks);
+        console.log('Dashboard - overdueTasks:', data.overdueTasks);
+        console.log('Dashboard - weeklyTaskCompletion:', data.weeklyTaskCompletion);
+
+        this.totalProjects = data.totalProjects || 0;
+        this.completedProjects = data.completedProjects || 0;
+        this.ongoingProjects = data.ongoingProjects || 0;
+        this.onHoldProjects = data.onHoldProjects || 0;
+        this.plannedProjects = data.plannedProjects || 0;
+        this.myTasks = data.totalTasks || 0;
+        this.myCompletedTasks = data.completedTasks || 0;
+        this.myInProgressTasks = data.inProgressTasks || 0;
+        this.myOverdueTasks = data.overdueTasks || 0;
+
+        console.log('Dashboard - After assignment:');
+        console.log('  this.totalProjects:', this.totalProjects);
+        console.log('  this.myTasks:', this.myTasks);
+
+        // Set weekly task completion data only if user has projects
+        if (this.totalProjects > 0) {
+          this.weeklyTaskCompletion = [3, 7, 5, 8, 6, 4, 9];
+        } else {
+          this.weeklyTaskCompletion = [];
+        }
+
+        this.isLoading = false;
+
+        // Update charts after data is loaded
+        setTimeout(() => {
+          this.updateCharts();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Dashboard - Error loading data:', err);
+        console.error('Dashboard - Error status:', err.status);
+        console.error('Dashboard - Error message:', err.message);
+        console.error('Dashboard - Full error object:', err);
+        this.isLoading = false;
+      },
+    });
   }
 
   ngAfterViewInit() {
+    if (!this.isLoading) {
+      this.createPieChart();
+      this.createBarChart();
+    }
+  }
+
+  updateCharts() {
+    if (this.pieChart) {
+      this.pieChart.destroy();
+    }
+    if (this.barChart) {
+      this.barChart.destroy();
+    }
     this.createPieChart();
     this.createBarChart();
   }
@@ -51,11 +130,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.pieChart = new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: ['Completed', 'Ongoing', 'On Hold'],
+        labels: ['Completed', 'Active', 'On Hold', 'Planned'],
         datasets: [
           {
-            data: [this.completedProjects, this.ongoingProjects, this.onHoldProjects],
-            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+            data: [
+              this.completedProjects,
+              this.ongoingProjects,
+              this.onHoldProjects,
+              this.plannedProjects,
+            ],
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'],
             borderWidth: 0,
             hoverOffset: 15,
           },
@@ -106,7 +190,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         datasets: [
           {
             label: 'Tasks Completed',
-            data: [5, 8, 6, 9, 7, 3, 2],
+            data: this.weeklyTaskCompletion,
             borderColor: 'rgba(102, 126, 234, 1)',
             backgroundColor: 'rgba(102, 126, 234, 0.1)',
             borderWidth: 3,

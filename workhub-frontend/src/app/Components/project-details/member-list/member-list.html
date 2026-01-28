@@ -1,6 +1,6 @@
 <div class="member-header">
   <h2>Team Members</h2>
-  <p>{{ members?.length || 0 }} members on this project</p>
+  <p>{{ members.length || 0 }} members on this project</p>
 </div>
 
 <div class="member-list">
@@ -8,13 +8,13 @@
     <div class="member-content">
       <div class="member-avatar-wrapper">
         <img
-          *ngIf="member.user.avatar"
-          [src]="member.user.avatar"
+          *ngIf="getAvatar(member)"
+          [src]="getAvatar(member)"
           [alt]="getFullName(member)"
           class="member-avatar"
         />
         <div
-          *ngIf="!member.user.avatar"
+          *ngIf="!getAvatar(member)"
           class="member-avatar member-avatar-placeholder"
           [style.background-color]="getAvatarColor(member)"
         >
@@ -23,10 +23,10 @@
       </div>
       <div class="member-info">
         <div class="member-name-row">
-          <h3>{{ member.user?.firstName }} {{ member.user?.lastName }}</h3>
+          <h3>{{ getFullName(member) }}</h3>
           <span
             class="badge"
-            [class.badge-admin]="member.role === 'OWNER' || member.role === 'ADMIN'"
+            [class.badge-admin]="member.role === 'OWNER' || member.role === 'MANAGER'"
           >
             {{ member.role }}
           </span>
@@ -41,10 +41,33 @@
                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               />
             </svg>
-            <span>{{ member.user?.email }}</span>
+            <span>{{ getEmail(member) }}</span>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Management Actions (only visible to owner) -->
+    <div *ngIf="canManageMember(member)" class="member-actions">
+      <select
+        class="role-select"
+        [value]="member.role"
+        (change)="onRoleChange(member, $any($event.target).value)"
+      >
+        <option value="MEMBER">Member</option>
+        <option value="MANAGER">Manager</option>
+        <option value="OWNER">Owner</option>
+      </select>
+      <button class="remove-button" (click)="onRemoveMember(member)" title="Remove member">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+      </button>
     </div>
   </div>
   <div *ngIf="!members || members.length === 0" class="empty-state">

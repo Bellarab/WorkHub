@@ -35,12 +35,52 @@
         />
       </div>
 
-      <button class="btn-filter">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-        </svg>
-        Filter
-      </button>
+      <div class="filter-container">
+        <button class="btn-filter" (click)="toggleFilterDropdown()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          Filter
+        </button>
+
+        <div class="filter-dropdown" *ngIf="showFilterDropdown">
+          <button
+            class="filter-option"
+            [class.active]="selectedFilter === 'all'"
+            (click)="setFilter('all')"
+          >
+            All Projects
+          </button>
+          <button
+            class="filter-option"
+            [class.active]="selectedFilter === 'active'"
+            (click)="setFilter('active')"
+          >
+            Active
+          </button>
+          <button
+            class="filter-option"
+            [class.active]="selectedFilter === 'planned'"
+            (click)="setFilter('planned')"
+          >
+            Planned
+          </button>
+          <button
+            class="filter-option"
+            [class.active]="selectedFilter === 'on_hold'"
+            (click)="setFilter('on_hold')"
+          >
+            On Hold
+          </button>
+          <button
+            class="filter-option"
+            [class.active]="selectedFilter === 'completed'"
+            (click)="setFilter('completed')"
+          >
+            Completed
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -116,7 +156,7 @@
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                <span>{{ project.members?.length || 0 }} members</span>
+                <span>{{ getMemberCount(project) }} members</span>
               </div>
             </div>
           </div>
@@ -185,7 +225,7 @@
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                <span>{{ project.members?.length || 0 }} members</span>
+                <span>{{ getMemberCount(project) }} members</span>
               </div>
             </div>
           </div>

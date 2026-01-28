@@ -4,6 +4,7 @@ import { Register } from './Authentication/register/register';
 import { DashboardComponent } from './Components/dashboard/dashboard';
 import { ProjectsComponent } from './Components/projects/projects';
 import { ProjectDetails } from './Components/project-details/project-details';
+import { CalendarComponent } from './Components/calendar/calendar';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -13,4 +14,5 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'projects', component: ProjectsComponent, canActivate: [authGuard] },
   { path: 'projects/:id', component: ProjectDetails, canActivate: [authGuard] },
+  { path: 'calendar', component: CalendarComponent, canActivate: [authGuard] },
 ];

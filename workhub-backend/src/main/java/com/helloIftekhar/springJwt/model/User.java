@@ -35,6 +35,7 @@ public class User implements UserDetails {
     private Role role;
 
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 

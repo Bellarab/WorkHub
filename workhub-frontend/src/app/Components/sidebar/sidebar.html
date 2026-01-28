@@ -6,31 +6,83 @@
   <nav class="sidebar-nav">
     <ul>
       <li *ngFor="let item of menuItems">
-        <a [routerLink]="['/', item.view]" routerLinkActive="active">
+        <a
+          *ngIf="item.id !== 'collaboration'"
+          [routerLink]="['/', item.view]"
+          routerLinkActive="active"
+        >
           {{ item.label }}
         </a>
+
+        <!-- Collaboration with dropdown -->
+        <div *ngIf="item.id === 'collaboration'" class="collaboration-item">
+          <a
+            [routerLink]="['/', item.view]"
+            routerLinkActive="active"
+            class="collaboration-link"
+            (click)="toggleCollaboration()"
+          >
+            {{ item.label }}
+            <svg
+              class="dropdown-icon"
+              [class.expanded]="isCollaborationExpanded"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </a>
+
+          <ul class="projects-dropdown" *ngIf="isCollaborationExpanded">
+            <li *ngFor="let project of userProjects" class="project-item">
+              <a (click)="navigateToProject(project.id, $event)">
+                <div
+                  class="project-color"
+                  [style.background-color]="project.color || '#6366f1'"
+                ></div>
+                {{ project.title }}
+              </a>
+            </li>
+            <li *ngIf="userProjects.length === 0" class="no-projects">
+              <span>No projects yet</span>
+            </li>
+          </ul>
+        </div>
       </li>
 
-      <li *ngIf="currentUser.role === 'ADMIN'">
+      <li *ngIf="currentUser?.role === 'ADMIN'">
         <a routerLink="/admin" routerLinkActive="active"> Admin Panel </a>
-      </li>
-
-      <li class="settings-item">
-        <button>Settings</button>
       </li>
     </ul>
   </nav>
 
   <div class="sidebar-footer">
     <div class="user-info">
-      <img [src]="currentUser.avatar" [alt]="currentUser.firstName + ' ' + currentUser.lastName" />
+      <img
+        *ngIf="currentUser?.avatar"
+        [src]="currentUser?.avatar"
+        [alt]="(currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '')"
+      />
+      <div
+        *ngIf="!currentUser?.avatar"
+        class="user-avatar-placeholder"
+        [style.background]="'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'"
+      >
+        {{ currentUser?.firstName?.charAt(0) }}{{ currentUser?.lastName?.charAt(0) }}
+      </div>
       <div class="user-details">
-        <p class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</p>
-        <p class="user-email">{{ currentUser.email }}</p>
+        <p class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+        <p class="user-email">{{ currentUser?.email }}</p>
       </div>
     </div>
 
-    <button class="role-toggle" (click)="onToggleRole()">Role: {{ currentUser.role }}</button>
+    <button class="role-toggle" (click)="onToggleRole()">Role: {{ currentUser?.role }}</button>
     <button class="btn-logout" (click)="onLogout()">Logout</button>
   </div>
 </aside>

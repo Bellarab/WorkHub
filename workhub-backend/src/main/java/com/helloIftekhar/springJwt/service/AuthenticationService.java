@@ -1,6 +1,7 @@
 package com.helloIftekhar.springJwt.service;
 
 
+import com.helloIftekhar.springJwt.DTO.UserDto;
 import com.helloIftekhar.springJwt.model.AuthenticationResponse;
 import com.helloIftekhar.springJwt.model.Token;
 import com.helloIftekhar.springJwt.model.User;
@@ -65,7 +66,10 @@ public class AuthenticationService {
 
         saveUserToken(accessToken, refreshToken, user);
 
-        return new AuthenticationResponse(accessToken, refreshToken,"User registration was successful");
+        UserDto userDto = new UserDto(user.getId(), user.getFirstName(), user.getLastName(), 
+                                      user.getUsername(), user.getEmail(), user.getRole());
+
+        return new AuthenticationResponse(accessToken, refreshToken,"User registration was successful", userDto);
 
     }
 
@@ -84,7 +88,10 @@ public class AuthenticationService {
         revokeAllTokenByUser(user);
         saveUserToken(accessToken, refreshToken, user);
 
-        return new AuthenticationResponse(accessToken, refreshToken, "User login was successful");
+        UserDto userDto = new UserDto(user.getId(), user.getFirstName(), user.getLastName(), 
+                                      user.getUsername(), user.getEmail(), user.getRole());
+
+        return new AuthenticationResponse(accessToken, refreshToken, "User login was successful", userDto);
 
     }
     private void revokeAllTokenByUser(User user) {

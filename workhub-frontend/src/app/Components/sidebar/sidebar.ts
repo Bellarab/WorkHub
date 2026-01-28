@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { User } from '../../Models/user/user-module';
+import { User, Project } from '../../Models/user/user-module';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../services/auth/auth.service';
+import { ProjectsService } from '../../services/projects/projects.service';
 
 /**
  * SidebarComponent
@@ -23,18 +24,48 @@ import { Auth } from '../../services/auth/auth.service';
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss'],
 })
-export class SidebarComponent {
-  constructor(private router: Router, private auth: Auth) {}
+export class SidebarComponent implements OnInit {
+  currentUser: User | null = null;
+  userProjects: Project[] = [];
+  isCollaborationExpanded = false;
+  isSettingsExpanded = false;
 
-  // Static current user data (no longer passed from parent)
-  currentUser: User = {
-    id: 1,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    role: 'ADMIN',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-  };
+  constructor(
+    private router: Router,
+    private auth: Auth,
+    private projectsService: ProjectsService
+  ) {
+    // Load current user from localStorage
+    this.currentUser = this.auth.getUser();
+    console.log('Sidebar - Current user from localStorage:', this.currentUser);
+
+    // If no user data, set a default (shouldn't happen if authenticated)
+    if (!this.currentUser) {
+      console.log('Sidebar - No user data found, using default');
+      this.currentUser = {
+        id: 0,
+        firstName: 'Guest',
+        lastName: 'User',
+        email: 'guest@example.com',
+        role: 'USER',
+      };
+    }
+  }
+
+  ngOnInit() {
+    // Load user projects
+    if (this.currentUser?.id) {
+      this.projectsService.getProjectsByUserId(this.currentUser.id).subscribe({
+        next: (projects) => {
+          this.userProjects = projects;
+          console.log('Sidebar - User projects loaded:', this.userProjects);
+        },
+        error: (err) => {
+          console.error('Sidebar - Error loading projects:', err);
+        },
+      });
+    }
+  }
 
   /**
    * Menu items displayed in the sidebar navigation
@@ -61,11 +92,57 @@ export class SidebarComponent {
   }
 
   /**
+   * Toggles the collaboration dropdown to show/hide projects
+   */
+  toggleCollaboration() {
+    this.isCollaborationExpanded = !this.isCollaborationExpanded;
+    if (this.isCollaborationExpanded) {
+      this.isSettingsExpanded = false; // Close settings when opening collaboration
+    }
+  }
+
+  /**
+   * Toggles the settings dropdown
+   */
+  toggleSettings() {
+    this.isSettingsExpanded = !this.isSettingsExpanded;
+    if (this.isSettingsExpanded) {
+      this.isCollaborationExpanded = false; // Close collaboration when opening settings
+    }
+  }
+
+  /**
+   * Navigates to a specific setting page or opens modal
+   * @param setting - The setting to navigate to
+   */
+  navigateToSetting(setting: string, event: Event) {
+    event.stopPropagation();
+    this.isSettingsExpanded = false;
+
+    // For now, just log - you can implement actual navigation/modals later
+    console.log('Navigate to setting:', setting);
+
+    // Example: this.router.navigate(['/settings', setting]);
+    // Or open a modal based on the setting
+  }
+
+  /**
+   * Navigates to a specific project
+   * @param projectId - The ID of the project to navigate to
+   */
+  navigateToProject(projectId: string, event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/projects', projectId], { queryParams: { tab: 'chat' } });
+  }
+
+  /**
    * Handles role toggle button click
    * Switches user role between 'ADMIN' and 'USER'
    */
   onToggleRole() {
-    this.currentUser.role = this.currentUser.role === 'ADMIN' ? 'USER' : 'ADMIN';
+    if (this.currentUser) {
+      this.currentUser.role = this.currentUser.role === 'ADMIN' ? 'USER' : 'ADMIN';
+    }
   }
 
   /**

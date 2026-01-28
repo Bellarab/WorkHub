@@ -27,6 +27,11 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getAllProjects());
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Project>> getProjectsByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(projectService.getProjectsByUserId(userId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
         return ResponseEntity.ok(projectService.getProjectById(id));
@@ -76,9 +81,9 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.listMembers(projectId));
     }
 
-    @GetMapping("/{projectId}/dashboard")
-    public ResponseEntity<ProjectDashboardResponse> dashboard(@PathVariable Long projectId) {
-        return ResponseEntity.ok(projectService.getDashboard(projectId));
+    @GetMapping("/dashboard/user/{userId}")
+    public ResponseEntity<UserDashboardResponse> getUserDashboard(@PathVariable Integer userId) {
+        return ResponseEntity.ok(projectService.getUserDashboard(userId));
     }
 }
 

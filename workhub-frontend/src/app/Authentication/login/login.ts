@@ -46,6 +46,8 @@ export class Login {
         next: (res) => {
           this.isLoading = false;
           this.auth.setToken(res.access_token);
+          this.auth.setUser(res.user); // Store user data
+          console.log('User logged in:', res.user);
           this.router.navigate([this.returnUrl]); // navigate to original requested page or dashboard
         },
         error: (err) => {

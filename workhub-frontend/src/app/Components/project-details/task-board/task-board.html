@@ -1,9 +1,9 @@
 <div class="task-header">
   <div>
     <h2>Project Tasks</h2>
-    <p>{{ tasks?.length || 0 }} total tasks</p>
+    <p>{{ tasks.length || 0 }} total tasks</p>
   </div>
-  <button class="add-task-button">
+  <button *ngIf="canCreateTasks" class="add-task-button" (click)="openCreateModal()">
     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
     </svg>
@@ -19,7 +19,7 @@
       <span class="column-count">{{ todoTasks.length }}</span>
     </div>
     <div class="task-list">
-      <div *ngFor="let task of todoTasks" class="task-card">
+      <div *ngFor="let task of todoTasks" class="task-card" (click)="openEditModal(task, $event)">
         <div class="task-title-row">
           <h4 class="task-title">{{ task.title }}</h4>
           <svg
@@ -37,23 +37,27 @@
             />
           </svg>
         </div>
+        <p class="task-description" *ngIf="task.description">{{ task.description }}</p>
         <div class="task-footer">
           <div class="task-assignee">
-            <span class="assignee-name">Assigned to: {{ task.assignedTo }}</span>
+            <span class="assignee-name">{{ getAssignedToName(task) }}</span>
           </div>
           <select
             class="task-status-select"
             [value]="task.status"
             (change)="updateTaskStatus(task, $any($event.target).value)"
+            [disabled]="!canChangeTaskStatus(task)"
+            (click)="$event.stopPropagation()"
           >
-            <option value="todo">To Do</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="TODO">To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
           </select>
         </div>
         <div class="task-due-date" *ngIf="task.dueDate">Due: {{ task.dueDate }}</div>
       </div>
       <div *ngIf="todoTasks.length === 0" class="empty-state">
+        \n
         <p>No tasks in this column</p>
       </div>
     </div>
@@ -66,7 +70,11 @@
       <span class="column-count">{{ inProgressTasks.length }}</span>
     </div>
     <div class="task-list">
-      <div *ngFor="let task of inProgressTasks" class="task-card">
+      <div
+        *ngFor="let task of inProgressTasks"
+        class="task-card"
+        (click)="openEditModal(task, $event)"
+      >
         <div class="task-title-row">
           <h4 class="task-title">{{ task.title }}</h4>
           <svg
@@ -84,18 +92,21 @@
             />
           </svg>
         </div>
+        <p class="task-description" *ngIf="task.description">{{ task.description }}</p>
         <div class="task-footer">
           <div class="task-assignee">
-            <span class="assignee-name">Assigned to: {{ task.assignedTo }}</span>
+            <span class="assignee-name">{{ getAssignedToName(task) }}</span>
           </div>
           <select
             class="task-status-select"
             [value]="task.status"
             (change)="updateTaskStatus(task, $any($event.target).value)"
+            [disabled]="!canChangeTaskStatus(task)"
+            (click)="$event.stopPropagation()"
           >
-            <option value="todo">To Do</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="TODO">To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
           </select>
         </div>
         <div class="task-due-date" *ngIf="task.dueDate">Due: {{ task.dueDate }}</div>
@@ -113,7 +124,11 @@
       <span class="column-count">{{ completedTasks.length }}</span>
     </div>
     <div class="task-list">
-      <div *ngFor="let task of completedTasks" class="task-card">
+      <div
+        *ngFor="let task of completedTasks"
+        class="task-card"
+        (click)="openEditModal(task, $event)"
+      >
         <div class="task-title-row">
           <h4 class="task-title">{{ task.title }}</h4>
           <svg
@@ -131,18 +146,21 @@
             />
           </svg>
         </div>
+        <p class="task-description" *ngIf="task.description">{{ task.description }}</p>
         <div class="task-footer">
           <div class="task-assignee">
-            <span class="assignee-name">Assigned to: {{ task.assignedTo }}</span>
+            <span class="assignee-name">{{ getAssignedToName(task) }}</span>
           </div>
           <select
             class="task-status-select"
             [value]="task.status"
             (change)="updateTaskStatus(task, $any($event.target).value)"
+            [disabled]="!canChangeTaskStatus(task)"
+            (click)="$event.stopPropagation()"
           >
-            <option value="todo">To Do</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="TODO">To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
           </select>
         </div>
         <div class="task-due-date" *ngIf="task.dueDate">Due: {{ task.dueDate }}</div>
@@ -151,5 +169,199 @@
         <p>No tasks in this column</p>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Create Task Modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Create New Task</h2>
+      <button class="close-button" (click)="closeCreateModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="createTask()">
+      <div class="form-group">
+        <label for="taskTitle">Task Title *</label>
+        <input
+          type="text"
+          id="taskTitle"
+          [(ngModel)]="newTaskTitle"
+          name="taskTitle"
+          placeholder="Enter task title"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="taskDescription">Description</label>
+        <textarea
+          id="taskDescription"
+          [(ngModel)]="newTaskDescription"
+          name="taskDescription"
+          placeholder="Enter task description"
+          rows="4"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="taskAssignee">Assign To</label>
+          <select
+            id="taskAssignee"
+            [(ngModel)]="newTaskAssigneeId"
+            name="taskAssignee"
+            [disabled]="!canAssignToOthers"
+          >
+            <option [ngValue]="null">Unassigned</option>
+            <option *ngFor="let member of members" [ngValue]="member.userId">
+              {{ getFullName(member) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="taskDueDate">Due Date</label>
+          <input type="date" id="taskDueDate" [(ngModel)]="newTaskDueDate" name="taskDueDate" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="taskPriority">Priority</label>
+          <select id="taskPriority" [(ngModel)]="newTaskPriority" name="taskPriority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="taskStatus">Status</label>
+          <select id="taskStatus" [(ngModel)]="newTaskStatus" name="taskStatus">
+            <option value="TODO" selected>To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-button" (click)="closeCreateModal()">Cancel</button>
+        <button type="submit" class="submit-button" [disabled]="!newTaskTitle.trim()">
+          Create Task
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Task</h2>
+      <button class="close-button" (click)="closeEditModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="saveTaskChanges()">
+      <div class="form-group">
+        <label for="editTaskTitle">Task Title *</label>
+        <input
+          type="text"
+          id="editTaskTitle"
+          [(ngModel)]="editTaskTitle"
+          name="editTaskTitle"
+          placeholder="Enter task title"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="editTaskDescription">Description</label>
+        <textarea
+          id="editTaskDescription"
+          [(ngModel)]="editTaskDescription"
+          name="editTaskDescription"
+          placeholder="Enter task description"
+          rows="4"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editTaskAssignee">Assign To</label>
+          <select
+            id="editTaskAssignee"
+            [(ngModel)]="editTaskAssigneeId"
+            name="editTaskAssignee"
+            [disabled]="!canAssignToOthers"
+          >
+            <option [ngValue]="null">Unassigned</option>
+            <option *ngFor="let member of members" [ngValue]="member.userId">
+              {{ getFullName(member) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editTaskDueDate">Due Date</label>
+          <input
+            type="date"
+            id="editTaskDueDate"
+            [(ngModel)]="editTaskDueDate"
+            name="editTaskDueDate"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editTaskPriority">Priority</label>
+          <select id="editTaskPriority" [(ngModel)]="editTaskPriority" name="editTaskPriority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editTaskStatus">Status</label>
+          <select id="editTaskStatus" [(ngModel)]="editTaskStatus" name="editTaskStatus">
+            <option value="TODO">To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="delete-button" (click)="deleteTask()">Delete Task</button>
+        <div class="action-buttons">
+          <button type="button" class="cancel-button" (click)="closeEditModal()">Cancel</button>
+          <button type="submit" class="submit-button" [disabled]="!editTaskTitle.trim()">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>

@@ -17,16 +17,17 @@ export interface ProjectMember {
     userId: number;
   };
   user: User;
-  role: 'OWNER' | 'MEMBER' | 'ADMIN';
+  role: 'OWNER' | 'MEMBER' | 'MANAGER';
 }
 
 export interface Task {
-  id: string;
+  id: number;
   title: string;
-  assignedTo: number;
-  status: string;
-  dueDate: string;
-  priority: string;
+  assignedTo: ProjectMember;
+  status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED';
+  dueDate?: string;
+  priority?: string;
+  description?: string;
 }
 
 export interface Project {
@@ -35,6 +36,7 @@ export interface Project {
   name?: string;
   description: string;
   color?: string;
+  status?: 'PLANNED' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED';
   members?: ProjectMember[];
   tasks?: Task[];
   createdBy?: number;

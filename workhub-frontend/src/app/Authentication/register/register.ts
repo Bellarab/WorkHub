@@ -68,6 +68,7 @@ export class Register {
           this.isLoading = false;
           console.log('Registered successfully', res);
           this.auth.setToken(res.access_token);
+          this.auth.setUser(res.user); // Store user data
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
